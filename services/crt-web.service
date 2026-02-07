@@ -9,8 +9,8 @@ WorkingDirectory=/opt/crt-kitchen-tv
 Environment=CRT_CONFIG=/etc/crt-kitchen-tv/config.yaml
 ExecStart=/opt/crt-kitchen-tv/venv/bin/waitress-serve --listen=0.0.0.0:8080 --call server.app:create_app
 Restart=on-failure
-User=pi
-Group=pi
+User=crt
+Group=crt
 
 [Install]
 WantedBy=multi-user.target

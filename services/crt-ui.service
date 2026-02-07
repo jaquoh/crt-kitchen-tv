@@ -13,8 +13,8 @@ StandardInput=tty
 StandardOutput=journal
 ExecStart=/opt/crt-kitchen-tv/venv/bin/python /opt/crt-kitchen-tv/ui/main.py
 Restart=on-failure
-User=pi
-Group=pi
+User=crt
+Group=crt
 
 [Install]
 WantedBy=multi-user.target
