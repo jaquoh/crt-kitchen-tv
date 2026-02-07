@@ -19,7 +19,8 @@ apt_install() {
   echo "[install] Installing apt packages"
   apt-get update -y
   apt-get install -y python3 python3-venv python3-pip mpv ffmpeg git fonts-dejavu \
-    python3-dev build-essential alsa-utils rsync
+    python3-dev build-essential alsa-utils rsync libsdl2-dev libsdl2-image-dev \
+    libsdl2-mixer-dev libsdl2-ttf-dev pkg-config libfreetype6-dev
 }
 
 sync_project_files() {
