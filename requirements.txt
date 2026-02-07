@@ -5,3 +5,4 @@ pygame==2.5.2
 spidev==3.6
 RPi.GPIO==0.7.1
 gpiozero==2.0
+pygame>=2.6.1
