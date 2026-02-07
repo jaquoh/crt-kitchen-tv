@@ -1,7 +1,6 @@
 Flask==3.0.2
 waitress==3.0.0
 PyYAML==6.0.1
-pygame>=2.6.1
 spidev==3.6
 RPi.GPIO==0.7.1
 gpiozero==2.0

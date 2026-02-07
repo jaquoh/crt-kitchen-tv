@@ -36,7 +36,7 @@ sync_project_files() {
 create_venv() {
   echo "[install] Ensuring Python venv"
   if [ ! -d "${INSTALL_DIR}/venv" ]; then
-    python3 -m venv "${INSTALL_DIR}/venv"
+    python3 -m venv --system-site-packages "${INSTALL_DIR}/venv"
   fi
   "${INSTALL_DIR}/venv/bin/pip" install --upgrade pip
   "${INSTALL_DIR}/venv/bin/pip" install -r "${INSTALL_DIR}/requirements.txt"
