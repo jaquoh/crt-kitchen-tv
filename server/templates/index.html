@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>CRT Kitchen TV</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 720px; margin: 20px auto; }
+    label { display:block; margin-top:10px; font-weight:bold; }
+    input[type=text], input[type=number] { width:100%; padding:6px; }
+    .list { margin-bottom: 10px; }
+    button { padding:10px 14px; font-size:16px; }
+    .error { color: #b00; }
+  </style>
+</head>
+<body>
+  <h1>CRT Kitchen TV</h1>
+  {% if errors %}
+    <div class="error">
+      <p>Errors:</p>
+      <ul>{% for e in errors %}<li>{{e}}</li>{% endfor %}</ul>
+    </div>
+  {% endif %}
+  <form action="/save" method="post">
+    <label>News stream URLs (one per line)</label>
+    <textarea name="news_streams" rows="3" style="width:100%">{{"\n".join(cfg.get("news_streams", []))}}</textarea>
+
+    <label>Movies directory</label>
+    <input type="text" name="movies_dir" value="{{cfg.get('movies_dir','')}}" />
+
+    <label>Audio output</label>
+    <select name="audio_output">
+      {% for opt in ['respeaker','hdmi','analog'] %}
+        <option value="{{opt}}" {% if cfg.get('audio_output')==opt %}selected{% endif %}>{{opt}}</option>
+      {% endfor %}
+    </select>
+
+    <label>Font size</label>
+    <input type="number" name="font_size" value="{{cfg.get('font_size',48)}}" />
+
+    <label>Overscan (top/bottom/left/right)</label>
+    <div style="display:flex; gap:6px;">
+      <input type="number" name="overscan[top]" value="{{cfg.get('overscan',{}).get('top',0)}}" placeholder="top" />
+      <input type="number" name="overscan[bottom]" value="{{cfg.get('overscan',{}).get('bottom',0)}}" placeholder="bottom" />
+      <input type="number" name="overscan[left]" value="{{cfg.get('overscan',{}).get('left',0)}}" placeholder="left" />
+      <input type="number" name="overscan[right]" value="{{cfg.get('overscan',{}).get('right',0)}}" placeholder="right" />
+    </div>
+
+    <label><input type="checkbox" name="leds_enabled" {% if cfg.get('leds_enabled',True) %}checked{% endif %}/> Enable LEDs</label>
+
+    <div style="margin-top:16px;">
+      <button type="submit">Save</button>
+    </div>
+  </form>
+</body>
+</html>

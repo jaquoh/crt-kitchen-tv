@@ -1,0 +1,20 @@
+[Unit]
+Description=CRT Kitchen TV Frontend UI
+After=network.target sound.target getty@tty1.service
+Wants=network.target
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/crt-kitchen-tv
+Environment=CRT_CONFIG=/etc/crt-kitchen-tv/config.yaml
+TTYPath=/dev/tty1
+StandardInput=tty
+StandardOutput=journal
+ExecStart=/opt/crt-kitchen-tv/venv/bin/python /opt/crt-kitchen-tv/ui/main.py
+Restart=on-failure
+User=pi
+Group=pi
+
+[Install]
+WantedBy=multi-user.target
