@@ -116,7 +116,8 @@ def main():
     cfg = load_config()
     font_size = int(cfg.get("font_size", 48))
     pygame.init()
-    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    # screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((640, 480), pygame.SCALED)
     pygame.mouse.set_visible(False)
     font = pygame.font.SysFont("dejavusans", font_size)
 
