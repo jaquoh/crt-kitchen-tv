@@ -10,7 +10,7 @@ User=crt
 Group=crt
 Environment=CRT_CONFIG=/etc/crt-kitchen-tv/config.yaml
 Environment=PYTHONUNBUFFERED=1
-ExecStart=/opt/crt-kitchen-tv/venv/bin/python -m waitress --listen=0.0.0.0:8080 server.app:app
+ExecStart=/opt/crt-kitchen-tv/venv/bin/waitress-serve --listen=0.0.0.0:8080 server.app:app
 Restart=on-failure
 RestartSec=2
 
