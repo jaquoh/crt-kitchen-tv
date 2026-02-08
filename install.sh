@@ -162,13 +162,19 @@ install_services() {
   cp "${INSTALL_DIR}/services/crt-ui.service" "${SERVICE_DIR}/"
 
   systemctl daemon-reload
+
+  # Enable both services
   systemctl enable crt-web.service
   systemctl enable crt-ui.service
 
   # Start/restart services immediately; UI launches via startx on tty1.
-  echo "[install] Restarting crt-web.service now (no reboot required for web UI)"
+  echo "[install] Restarting crt-web.service now (web UI should be reachable on :8080)"
   systemctl restart crt-web.service || true
   systemctl status crt-web.service --no-pager || true
+
+  echo "[install] Restarting crt-ui.service now (CRT UI on tty1)"
+  systemctl restart crt-ui.service || true
+  systemctl status crt-ui.service --no-pager || true
 }
 
 maybe_install_respeaker() {
