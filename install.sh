@@ -18,21 +18,23 @@ require_root() {
 apt_install() {
   echo "[install] Installing apt packages"
   apt-get update -y
-  apt-get install -y \
-    python3 python3-venv python3-pip python3-dev build-essential pkg-config \
-    git rsync \
-    mpv ffmpeg \
-    alsa-utils \
-    fonts-dejavu \
-    # X11 minimal stack for pygame UI on composite CRT (no window manager required)
-    xserver-xorg xinit x11-xserver-utils \
-    unclutter \
-    # Helpful framebuffer utilities for debugging CRT output
-    fbset fbi \
-    # GPIO backend preferred by gpiozero (used for IR / buttons later)
-    python3-lgpio \
-    # SDL2 headers (only needed if wheels build; safe to include)
+
+  # Minimal X11 stack (no window manager) so SDL/pygame works reliably on DietPi + composite CRT.
+  # Also includes mpv/ffmpeg, fonts, ALSA utils, GPIO backend, and SDL2 dev libs (safe to have).
+  local pkgs=(
+    python3 python3-venv python3-pip python3-dev build-essential pkg-config
+    git rsync
+    mpv ffmpeg
+    alsa-utils
+    fonts-dejavu
+    xserver-xorg xinit x11-xserver-utils
+    unclutter
+    fbset fbi
+    python3-lgpio
     libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev
+  )
+
+  apt-get install -y "${pkgs[@]}"
 }
 
 sync_project_files() {
