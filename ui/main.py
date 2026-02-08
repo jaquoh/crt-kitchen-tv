@@ -12,6 +12,7 @@ CONFIG_PATH = os.environ.get("CRT_CONFIG", "/etc/crt-kitchen-tv/config.yaml")
 BUTTON_GPIO = 17
 REFRESH_SECONDS = 10
 VIDEO_EXTS = {".mp4", ".mkv", ".mov"}
+DEBUG_LOG_PATH = "/tmp/crt-kitchen-tv-ui.log"
 
 # Favor framebuffer output for pygame menu.
 os.environ.setdefault("SDL_FBDEV", "/dev/fb0")
@@ -81,6 +82,32 @@ def list_video_files(folder, sort_mode):
     return [str(f) for f in files], None
 
 
+def ui_log(message):
+    stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        with open(DEBUG_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(f"[{stamp}] {message}\n")
+    except Exception:
+        pass
+
+
+def wrap_text(text, max_chars=42):
+    words = str(text).split()
+    if not words:
+        return [""]
+    lines = []
+    cur = words[0]
+    for word in words[1:]:
+        candidate = f"{cur} {word}"
+        if len(candidate) <= max_chars:
+            cur = candidate
+        else:
+            lines.append(cur)
+            cur = word
+    lines.append(cur)
+    return lines
+
+
 def draw_list(screen, font, title, items, selected, subtitle=""):
     screen.fill((0, 0, 0))
     title_surf = font.render(title, True, (255, 255, 0))
@@ -100,10 +127,13 @@ def draw_list(screen, font, title, items, selected, subtitle=""):
 
 def draw_message(screen, font, message, hint="Backspace to return"):
     screen.fill((0, 0, 0))
-    msg = font.render(message, True, (255, 120, 120))
-    screen.blit(msg, (40, 180))
+    y = 150
+    for line in wrap_text(message, max_chars=42)[:4]:
+        msg = font.render(line, True, (255, 120, 120))
+        screen.blit(msg, (40, y))
+        y += font.get_linesize() + 5
     hint_surf = font.render(hint, True, (200, 200, 200))
-    screen.blit(hint_surf, (40, 250))
+    screen.blit(hint_surf, (40, min(y + 20, 430)))
     pygame.display.flip()
 
 
@@ -111,9 +141,14 @@ def play_news(cfg, leds):
     streams = cfg.get("news_streams", [])
     if not streams:
         return "No news stream configured"
+    ui_log(f"news play request: {streams[0]}")
     leds.set_all(0, 0, 64)
     ok, err = player.play_media(streams[0], cfg)
     leds.off()
+    if not ok:
+        ui_log(f"news play failed: {err}")
+    else:
+        ui_log("news play finished")
     return None if ok else err
 
 
@@ -163,13 +198,17 @@ def main():
 
     def play_item(path):
         nonlocal mode, error_message, error_return_mode
+        ui_log(f"play request: {path}")
         leds.set_all(64, 0, 0)
         ok, err = player.play_media(path, cfg)
         leds.off()
         if not ok:
             error_message = err or "Failed to start playback"
+            ui_log(f"play failed: {path} :: {error_message}")
             error_return_mode = mode
             mode = "error"
+        else:
+            ui_log(f"play finished: {path}")
 
     draw_list(screen, font, "CRT Kitchen TV", menu_items, menu_idx)
     running = True

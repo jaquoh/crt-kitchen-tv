@@ -1,5 +1,6 @@
 import os
 import subprocess
+import time
 from ui.hw import audio
 
 
@@ -19,6 +20,7 @@ def play_media(source, config):
     errors = []
     for backend_args in backends:
         args = base + backend_args + audio_args + [source]
+        start_ts = time.time()
         try:
             result = subprocess.run(
                 args,
@@ -29,8 +31,13 @@ def play_media(source, config):
             )
         except FileNotFoundError:
             return False, "mpv is not installed or not in PATH"
-        if result.returncode == 0:
+        elapsed = time.time() - start_ts
+        if result.returncode == 0 and elapsed >= 1.0:
             return True, None
+        backend_name = "x11" if "--gpu-context=x11" in backend_args else ("drm" if "--vo=drm" in backend_args else "auto")
         err_line = (result.stderr or "").strip().splitlines()
-        errors.append(err_line[-1] if err_line else f"mpv exited with code {result.returncode}")
+        err_text = err_line[-1] if err_line else f"mpv exited with code {result.returncode}"
+        if result.returncode == 0 and elapsed < 1.0:
+            err_text = f"mpv exited too quickly ({elapsed:.1f}s)"
+        errors.append(f"{backend_name}: {err_text}")
     return False, errors[-1] if errors else "Unable to start mpv"
