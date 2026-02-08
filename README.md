@@ -50,6 +50,7 @@ collections:
   - News
   - Movies
 library_sort: newest   # or alpha
+mpv_backend: drm       # drm, x11, or auto
 audio_output: respeaker   # or hdmi / analog
 font_size: 48
 overscan:

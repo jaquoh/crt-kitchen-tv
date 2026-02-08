@@ -44,6 +44,13 @@
       {% endfor %}
     </select>
 
+    <label>mpv backend</label>
+    <select name="mpv_backend">
+      {% for opt in ['drm','x11','auto'] %}
+        <option value="{{opt}}" {% if cfg.get('mpv_backend','drm')==opt %}selected{% endif %}>{{opt}}</option>
+      {% endfor %}
+    </select>
+
     <label>Audio output</label>
     <select name="audio_output">
       {% for opt in ['respeaker','hdmi','analog'] %}

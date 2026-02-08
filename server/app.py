@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify, render_template, redirect
 CONFIG_PATH = os.environ.get("CRT_CONFIG", "/etc/crt-kitchen-tv/config.yaml")
 VALID_AUDIO = {"respeaker", "hdmi", "analog"}
 VALID_SORT = {"newest", "alpha"}
+VALID_MPV_BACKEND = {"drm", "x11", "auto"}
 UI_DEBUG_LOG = "/tmp/crt-kitchen-tv-ui.log"
 RESPEAKER_LOG = "/var/log/crt-kitchen-tv/respeaker-driver.log"
 
@@ -42,6 +43,8 @@ def validate(payload):
         errors.append("collections must be a list of non-empty strings")
     if cfg.get("library_sort", "newest") not in VALID_SORT:
         errors.append("library_sort must be newest|alpha")
+    if cfg.get("mpv_backend", "drm") not in VALID_MPV_BACKEND:
+        errors.append("mpv_backend must be drm|x11|auto")
     overscan = cfg.get("overscan", {})
     for key in ("top", "bottom", "left", "right"):
         try:
@@ -173,7 +176,7 @@ def create_app():
         for k in ("movies_dir", "audio_output", "font_size"):
             if k in raw and raw[k]:
                 payload[k] = raw[k][0]
-        for k in ("media_root", "library_sort"):
+        for k in ("media_root", "library_sort", "mpv_backend"):
             if k in raw and raw[k]:
                 payload[k] = raw[k][0]
         if "collections" in raw:

@@ -65,6 +65,7 @@ def load_config():
     cfg.setdefault("media_root", "/var/lib/crt-kitchen-tv/media")
     cfg.setdefault("collections", ["Inbox", "News", "Movies"])
     cfg.setdefault("library_sort", "newest")
+    cfg.setdefault("mpv_backend", "drm")
     cfg.setdefault("font_size", 48)
     cfg.setdefault("leds_enabled", True)
     return cfg
@@ -143,12 +144,12 @@ def play_news(cfg, leds):
         return "No news stream configured"
     ui_log(f"news play request: {streams[0]}")
     leds.set_all(0, 0, 64)
-    ok, err = player.play_media(streams[0], cfg)
+    ok, err, detail = player.play_media(streams[0], cfg)
     leds.off()
     if not ok:
         ui_log(f"news play failed: {err}")
     else:
-        ui_log("news play finished")
+        ui_log(f"news play finished via {detail}")
     return None if ok else err
 
 
@@ -200,7 +201,7 @@ def main():
         nonlocal mode, error_message, error_return_mode
         ui_log(f"play request: {path}")
         leds.set_all(64, 0, 0)
-        ok, err = player.play_media(path, cfg)
+        ok, err, detail = player.play_media(path, cfg)
         leds.off()
         if not ok:
             error_message = err or "Failed to start playback"
@@ -208,7 +209,7 @@ def main():
             error_return_mode = mode
             mode = "error"
         else:
-            ui_log(f"play finished: {path}")
+            ui_log(f"play finished: {path} via {detail}")
 
     draw_list(screen, font, "CRT Kitchen TV", menu_items, menu_idx)
     running = True
