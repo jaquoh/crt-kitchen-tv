@@ -1,20 +1,39 @@
 [Unit]
 Description=CRT Kitchen TV Frontend UI
-After=network.target sound.target getty@tty1.service
+After=network.target sound.target
 Wants=network.target
 Conflicts=getty@tty1.service
+After=getty@tty1.service
 
 [Service]
 Type=simple
 WorkingDirectory=/opt/crt-kitchen-tv
-Environment=CRT_CONFIG=/etc/crt-kitchen-tv/config.yaml
-TTYPath=/dev/tty1
-StandardInput=tty
-StandardOutput=journal
-ExecStart=/opt/crt-kitchen-tv/venv/bin/python /opt/crt-kitchen-tv/ui/main.py
-Restart=on-failure
 User=crt
 Group=crt
+
+# Prefer classic framebuffer console on Legacy kernels
+Environment=SDL_VIDEODRIVER=fbcon
+Environment=SDL_FBDEV=/dev/fb0
+Environment=SDL_NOMOUSE=1
+Environment=PYGAME_HIDE_SUPPORT_PROMPT=1
+
+# Don’t let audio init block UI bring-up; switch to ALSA later once ReSpeaker is confirmed
+Environment=SDL_AUDIODRIVER=dummy
+
+# Run as a module so imports like "from ui.hw.device ..." work
+ExecStart=/opt/crt-kitchen-tv/venv/bin/python -m ui.main
+
+# Attach cleanly to tty1
+TTYPath=/dev/tty1
+StandardInput=tty-force
+StandardOutput=journal
+StandardError=journal
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+
+Restart=on-failure
+RestartSec=1
 
 [Install]
 WantedBy=multi-user.target

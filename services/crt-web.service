@@ -1,16 +1,17 @@
 [Unit]
-Description=CRT Kitchen TV Web UI
-After=network-online.target
-Wants=network-online.target
+Description=CRT Kitchen TV Web Config UI
+After=network.target
+Wants=network.target
 
 [Service]
 Type=simple
 WorkingDirectory=/opt/crt-kitchen-tv
-Environment=CRT_CONFIG=/etc/crt-kitchen-tv/config.yaml
-ExecStart=/opt/crt-kitchen-tv/venv/bin/waitress-serve --listen=0.0.0.0:8080 --call server.app:create_app
-Restart=on-failure
 User=crt
 Group=crt
+Environment=CRT_CONFIG=/etc/crt-kitchen-tv/config.yaml
+ExecStart=/opt/crt-kitchen-tv/venv/bin/python -m waitress --listen=0.0.0.0:8080 server.app:app
+Restart=on-failure
+RestartSec=2
 
 [Install]
 WantedBy=multi-user.target

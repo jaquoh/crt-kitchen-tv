@@ -15,7 +15,7 @@ CONFIG_PATH = os.environ.get("CRT_CONFIG", "/etc/crt-kitchen-tv/config.yaml")
 BUTTON_GPIO = 17
 
 # Favor framebuffer output
-os.environ.setdefault("SDL_VIDEODRIVER", "fbdev")
+# os.environ.setdefault("SDL_VIDEODRIVER", "fbcon")
 os.environ.setdefault("SDL_FBDEV", "/dev/fb0")
 os.environ.setdefault("SDL_NOMOUSE", "1")
 
@@ -116,8 +116,7 @@ def main():
     cfg = load_config()
     font_size = int(cfg.get("font_size", 48))
     pygame.init()
-    # screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-    screen = pygame.display.set_mode((640, 480), pygame.SCALED)
+    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     pygame.mouse.set_visible(False)
     font = pygame.font.SysFont("dejavusans", font_size)
 
