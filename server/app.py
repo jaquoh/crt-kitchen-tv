@@ -1,10 +1,13 @@
 import os
+import subprocess
 import yaml
 from flask import Flask, request, jsonify, render_template, redirect
 
 CONFIG_PATH = os.environ.get("CRT_CONFIG", "/etc/crt-kitchen-tv/config.yaml")
 VALID_AUDIO = {"respeaker", "hdmi", "analog"}
 VALID_SORT = {"newest", "alpha"}
+UI_DEBUG_LOG = "/tmp/crt-kitchen-tv-ui.log"
+RESPEAKER_LOG = "/var/log/crt-kitchen-tv/respeaker-driver.log"
 
 
 def load_config():
@@ -81,12 +84,60 @@ def normalize_payload(payload):
     return norm
 
 
+def read_tail(path, lines=120):
+    if not os.path.exists(path):
+        return f"{path}: not found"
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            content = f.readlines()
+        return "".join(content[-lines:]).strip() or f"{path}: empty"
+    except Exception as exc:
+        return f"Failed reading {path}: {exc}"
+
+
+def read_journal(unit, lines=120):
+    cmd = ["journalctl", "-u", unit, "-n", str(lines), "--no-pager"]
+    try:
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
+    except FileNotFoundError:
+        return "journalctl not available"
+    if result.returncode != 0:
+        err = (result.stderr or "").strip()
+        return f"journalctl error: {err or 'unknown'}"
+    out = (result.stdout or "").strip()
+    return out or "No entries"
+
+
+def collect_logs(lines=120):
+    return {
+        "ui_debug": read_tail(UI_DEBUG_LOG, lines=lines),
+        "respeaker_driver": read_tail(RESPEAKER_LOG, lines=lines),
+        "crt_ui_service": read_journal("crt-ui.service", lines=lines),
+        "crt_web_service": read_journal("crt-web.service", lines=lines),
+    }
+
+
 def create_app():
     app = Flask(__name__)
 
     @app.route("/")
     def index():
-        return render_template("index.html", cfg=load_config())
+        try:
+            lines = int(request.args.get("lines", "120"))
+        except ValueError:
+            lines = 120
+        lines = max(20, min(lines, 500))
+        logs = collect_logs(lines=lines)
+        return render_template("index.html", cfg=load_config(), logs=logs, lines=lines)
+
+    @app.route("/api/logs", methods=["GET"])
+    def api_logs():
+        try:
+            lines = int(request.args.get("lines", "120"))
+        except ValueError:
+            lines = 120
+        lines = max(20, min(lines, 500))
+        return jsonify({"lines": lines, "logs": collect_logs(lines=lines)})
 
     @app.route("/api/config", methods=["GET", "POST"])
     def api_config():
@@ -131,7 +182,8 @@ def create_app():
         payload["leds_enabled"] = raw.get("leds_enabled", ["off"])[0] == "on"
         errors = validate(payload)
         if errors:
-            return render_template("index.html", cfg=load_config(), errors=errors), 400
+            logs = collect_logs(lines=120)
+            return render_template("index.html", cfg=load_config(), errors=errors, logs=logs, lines=120), 400
         cfg = load_config()
         cfg.update(payload)
         save_config(cfg)

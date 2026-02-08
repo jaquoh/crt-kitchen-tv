@@ -10,6 +10,10 @@
     .list { margin-bottom: 10px; }
     button { padding:10px 14px; font-size:16px; }
     .error { color: #b00; }
+    pre { background:#111; color:#ddd; padding:10px; overflow:auto; max-height:240px; white-space:pre-wrap; }
+    .logs { margin-top:24px; border-top:1px solid #ccc; padding-top:16px; }
+    .row { display:flex; gap:8px; align-items:center; margin-top:6px; }
+    .row input { width:120px; }
   </style>
 </head>
 <body>
@@ -64,5 +68,26 @@
       <button type="submit">Save</button>
     </div>
   </form>
+
+  <div class="logs">
+    <h2>Diagnostics</h2>
+    <form method="get" action="/" class="row">
+      <label for="lines" style="margin:0;">Log lines</label>
+      <input id="lines" type="number" name="lines" min="20" max="500" value="{{lines or 120}}" />
+      <button type="submit">Refresh Logs</button>
+    </form>
+
+    <h3>UI debug (`/tmp/crt-kitchen-tv-ui.log`)</h3>
+    <pre>{{ (logs or {}).get('ui_debug', 'No data') }}</pre>
+
+    <h3>Service log (`crt-ui.service`)</h3>
+    <pre>{{ (logs or {}).get('crt_ui_service', 'No data') }}</pre>
+
+    <h3>Service log (`crt-web.service`)</h3>
+    <pre>{{ (logs or {}).get('crt_web_service', 'No data') }}</pre>
+
+    <h3>ReSpeaker driver log</h3>
+    <pre>{{ (logs or {}).get('respeaker_driver', 'No data') }}</pre>
+  </div>
 </body>
 </html>

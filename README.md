@@ -81,6 +81,8 @@ PY
 - If LEDs don't light, confirm SPI: `ls /dev/spidev*`
 - To change TV standard, edit the composite block in `/boot/config.txt` and reboot
 - If UI fails to start, ensure tty1 free: `sudo systemctl stop getty@tty1`
+- Web diagnostics page: `http://<pi>:8080/` (bottom section, includes UI debug and service logs)
+- JSON diagnostics endpoint: `http://<pi>:8080/api/logs?lines=200`
 
 ## Notes
 - Button long-press (~1s) = back/home, short press = select
