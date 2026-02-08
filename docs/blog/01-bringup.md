@@ -41,6 +41,8 @@ Reasons for choosing DietPi:
 
 DietPi provides `/dev/fb0` for composite output and allows adding only the minimal X11 stack required for SDL/pygame.
 
+Modern Raspberry Pi OS versions based on the Bookworm kernel no longer support SDL framebuffer backends reliably on ARMv6 hardware like the Pi Zero. This limitation necessitated adding a minimal X11 layer to ensure stable and compatible rendering for the CRT UI.
+
 ## Composite video configuration
 
 The CRT is connected using the Raspberry Pi composite output. Video mode is configured via the Raspberry Pi firmware options.
@@ -50,6 +52,37 @@ Typical configuration (PAL example):
 - Framebuffer resolution: `720x576`
 
 On DietPi, this is configured through `dietpi-config` → Display Options.
+
+## Rendering stack: why minimal X11
+
+SDL's fbcon/fbdev backends are broken or unavailable on modern Raspberry Pi kernels, especially on ARMv6 devices. This prevents direct framebuffer rendering from working reliably.
+
+Running pygame with SDL 2 under X11 provides a stable and consistent rendering environment. By using Xorg with `startx` but without any desktop environment or window manager, the system remains lightweight and focused.
+
+This minimal X11 approach keeps performance acceptable on the Pi Zero while ensuring compatibility with the CRT display and the custom UI.
+
+## Boot & runtime flow (simplified)
+
+```
+Power on
+  │
+  ├─ Raspberry Pi firmware
+  │
+  ├─ Linux kernel (ARMv6)
+  │
+  ├─ systemd
+  │   ├─ networking
+  │   ├─ ssh
+  │   └─ crt-ui.service
+  │
+  ├─ startx (tty1, no window manager)
+  │
+  ├─ Xorg (minimal)
+  │
+  └─ pygame UI (fullscreen, CRT-optimized)
+```
+
+This illustrates the intentionally short and deterministic boot path.
 
 ## System preparation
 
@@ -66,11 +99,13 @@ The system is administered exclusively through the `crt` user using `sudo`.
 
 1. Log in as user `crt`
 2. Clone the repository into `/opt/crt-kitchen-tv`
-3. Run `install.sh` as root
+3. Run `install.sh` as root (using `sudo`)
 4. Reboot
 
 The installer:
 - Installs all required packages
+- Installs a minimal X11 stack (`xserver-xorg`, `xinit`, fonts)
+- Installs no window manager
 - Creates and configures the runtime user
 - Sets up a Python virtual environment
 - Installs systemd services
@@ -80,9 +115,45 @@ The installer:
 
 - System boots directly into the CRT UI
 - Composite video is stable and correctly scaled
-- Web UI reachable over the network
+- Web UI reachable over the network via `http://<pi-ip>:8080`
 - mpv playback works from the command line
 - GPIO access available for future IR input
+- Verified `crt-ui.service` runs `startx` on tty1
+
+## Lessons learned
+
+- Framebuffer-only rendering is no longer viable on modern Pi kernels
+- Minimal X11 is the most reliable option for CRT + Pi Zero
+- DietPi makes it easy to keep the system small and deterministic
+- Treat the Pi as a deployment target, not a dev machine
+
+## Why not Electron / browser-based UI?
+
+A browser or Electron-based solution was intentionally avoided.
+
+What an Electron setup would look like:
+- Full Chromium runtime
+- Node.js + Electron
+- GPU acceleration requirements
+- Significantly higher RAM and storage usage
+- Longer boot times
+- More background processes
+
+On a Raspberry Pi Zero, this would result in:
+- Poor performance
+- Long startup times
+- High memory pressure
+- Unpredictable rendering latency
+
+Electron excels at cross-platform desktop apps, but this project is an embedded appliance with fixed hardware and a single purpose.
+
+By using pygame with a minimal X11 stack:
+- The rendering path is simple and predictable
+- Startup time is short
+- Resource usage stays within Pi Zero limits
+- The UI behaves like firmware, not an application
+
+This trade-off favors reliability and clarity over portability.
 
 ## Current state
 

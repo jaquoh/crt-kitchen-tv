@@ -3,7 +3,7 @@
 Raspberry Pi OS Lite project that boots straight into a fullscreen, big-button UI on a small CRT (composite video) and uses the ReSpeaker 2-Mics Pi HAT for audio. A lightweight Flask web UI lets you update config on the LAN.
 
 ## Features
-- Framebuffer pygame UI with News and Movies menus
+- Framebuffer pygame UI with News, Movies, and Library menus
 - mpv playback for streams/files, returns to menu when done
 - Optional ReSpeaker button (GPIO17) for select/back; optional APA102 status LEDs over SPI
 - Web UI at `http://<pi>:8080` to edit config
@@ -44,6 +44,12 @@ Default: `/etc/crt-kitchen-tv/config.yaml`
 news_streams:
   - https://example.com/stream.m3u8
 movies_dir: /home/pi/Videos
+media_root: /var/lib/crt-kitchen-tv/media
+collections:
+  - Inbox
+  - News
+  - Movies
+library_sort: newest   # or alpha
 audio_output: respeaker   # or hdmi / analog
 font_size: 48
 overscan:
@@ -79,4 +85,5 @@ PY
 ## Notes
 - Button long-press (~1s) = back/home, short press = select
 - Movies list shows common video extensions in `movies_dir`
+- Library shows configured collections under `media_root` and refreshes every 10 seconds while viewing a collection
 - LEDs are optional; disable in config if absent

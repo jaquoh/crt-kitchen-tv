@@ -27,6 +27,19 @@
     <label>Movies directory</label>
     <input type="text" name="movies_dir" value="{{cfg.get('movies_dir','')}}" />
 
+    <label>Media root</label>
+    <input type="text" name="media_root" value="{{cfg.get('media_root','/var/lib/crt-kitchen-tv/media')}}" />
+
+    <label>Collections (one folder name per line)</label>
+    <textarea name="collections" rows="4" style="width:100%">{{"\n".join(cfg.get("collections", ["Inbox", "News", "Movies"]))}}</textarea>
+
+    <label>Library sort</label>
+    <select name="library_sort">
+      {% for opt in ['newest','alpha'] %}
+        <option value="{{opt}}" {% if cfg.get('library_sort','newest')==opt %}selected{% endif %}>{{opt}}</option>
+      {% endfor %}
+    </select>
+
     <label>Audio output</label>
     <select name="audio_output">
       {% for opt in ['respeaker','hdmi','analog'] %}
