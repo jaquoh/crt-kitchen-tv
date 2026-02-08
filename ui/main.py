@@ -110,10 +110,11 @@ def draw_message(screen, font, message, hint="Backspace to return"):
 def play_news(cfg, leds):
     streams = cfg.get("news_streams", [])
     if not streams:
-        return
+        return "No news stream configured"
     leds.set_all(0, 0, 64)
-    player.play_media(streams[0], cfg)
+    ok, err = player.play_media(streams[0], cfg)
     leds.off()
+    return None if ok else err
 
 
 def main():
@@ -140,6 +141,8 @@ def main():
     collection_files = []
     collection_error = None
     last_scan_ts = 0.0
+    error_message = None
+    error_return_mode = "menu"
 
     def refresh_movies():
         nonlocal movies, movies_idx
@@ -157,6 +160,16 @@ def main():
         file_idx = 0
         last_scan_ts = time.time()
         mode = "library_files"
+
+    def play_item(path):
+        nonlocal mode, error_message, error_return_mode
+        leds.set_all(64, 0, 0)
+        ok, err = player.play_media(path, cfg)
+        leds.off()
+        if not ok:
+            error_message = err or "Failed to start playback"
+            error_return_mode = mode
+            mode = "error"
 
     draw_list(screen, font, "CRT Kitchen TV", menu_items, menu_idx)
     running = True
@@ -188,11 +201,19 @@ def main():
                 elif mode == "library_files" and collection_files:
                     file_idx = (file_idx + 1) % len(collection_files)
             elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                if mode == "error":
+                    mode = error_return_mode
+                    error_message = None
+                    continue
                 if mode == "menu":
                     selected = menu_items[menu_idx]
                     if selected == "News":
                         draw_list(screen, font, "News", ["Loading stream..."], 0)
-                        play_news(cfg, leds)
+                        err = play_news(cfg, leds)
+                        if err:
+                            error_message = err
+                            error_return_mode = "menu"
+                            mode = "error"
                     elif selected == "Movies":
                         mode = "movies"
                         err = refresh_movies()
@@ -201,19 +222,18 @@ def main():
                     else:
                         mode = "library_collections"
                 elif mode == "movies" and movies:
-                    leds.set_all(64, 0, 0)
-                    player.play_media(movies[movies_idx], cfg)
-                    leds.off()
+                    play_item(movies[movies_idx])
                 elif mode == "library_collections":
                     collections = cfg.get("collections", [])
                     if collections:
                         enter_collection(collections[collection_idx])
                 elif mode == "library_files" and collection_files and not collection_error:
-                    leds.set_all(64, 0, 0)
-                    player.play_media(collection_files[file_idx], cfg)
-                    leds.off()
+                    play_item(collection_files[file_idx])
             elif event.key == pygame.K_BACKSPACE:
-                if mode == "menu":
+                if mode == "error":
+                    mode = error_return_mode
+                    error_message = None
+                elif mode == "menu":
                     running = False
                 elif mode == "library_files":
                     mode = "library_collections"
@@ -256,6 +276,8 @@ def main():
                     file_idx,
                     subtitle=f"Sort: {cfg.get('library_sort', 'newest')}",
                 )
+        elif mode == "error":
+            draw_message(screen, font, error_message or "Playback failed")
 
         clock.tick(30)
 
