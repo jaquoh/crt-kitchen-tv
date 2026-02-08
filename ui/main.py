@@ -15,7 +15,7 @@ CONFIG_PATH = os.environ.get("CRT_CONFIG", "/etc/crt-kitchen-tv/config.yaml")
 BUTTON_GPIO = 17
 
 # Favor framebuffer output
-os.environ.setdefault("SDL_VIDEODRIVER", "fbcon")
+os.environ.setdefault("SDL_VIDEODRIVER", "fbdev")
 os.environ.setdefault("SDL_FBDEV", "/dev/fb0")
 os.environ.setdefault("SDL_NOMOUSE", "1")
 
