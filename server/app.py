@@ -6,8 +6,9 @@ from flask import Flask, request, jsonify, render_template, redirect
 CONFIG_PATH = os.environ.get("CRT_CONFIG", "/etc/crt-kitchen-tv/config.yaml")
 VALID_AUDIO = {"respeaker", "hdmi", "analog"}
 VALID_SORT = {"newest", "alpha"}
-VALID_MPV_BACKEND = {"drm", "x11", "auto"}
+VALID_MPV_BACKEND = {"drm", "x11", "sdl", "auto"}
 UI_DEBUG_LOG = "/tmp/crt-kitchen-tv-ui.log"
+MPV_DEBUG_LOG = "/tmp/crt-kitchen-tv-mpv.log"
 RESPEAKER_LOG = "/var/log/crt-kitchen-tv/respeaker-driver.log"
 
 
@@ -44,7 +45,7 @@ def validate(payload):
     if cfg.get("library_sort", "newest") not in VALID_SORT:
         errors.append("library_sort must be newest|alpha")
     if cfg.get("mpv_backend", "drm") not in VALID_MPV_BACKEND:
-        errors.append("mpv_backend must be drm|x11|auto")
+        errors.append("mpv_backend must be drm|x11|sdl|auto")
     overscan = cfg.get("overscan", {})
     for key in ("top", "bottom", "left", "right"):
         try:
@@ -114,6 +115,7 @@ def read_journal(unit, lines=120):
 def collect_logs(lines=120):
     return {
         "ui_debug": read_tail(UI_DEBUG_LOG, lines=lines),
+        "mpv_debug": read_tail(MPV_DEBUG_LOG, lines=lines),
         "respeaker_driver": read_tail(RESPEAKER_LOG, lines=lines),
         "crt_ui_service": read_journal("crt-ui.service", lines=lines),
         "crt_web_service": read_journal("crt-web.service", lines=lines),

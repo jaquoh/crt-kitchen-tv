@@ -50,7 +50,7 @@ collections:
   - News
   - Movies
 library_sort: newest   # or alpha
-mpv_backend: drm       # drm, x11, or auto
+mpv_backend: drm       # drm, sdl, x11, or auto
 audio_output: respeaker   # or hdmi / analog
 font_size: 48
 overscan:
@@ -83,6 +83,7 @@ PY
 - To change TV standard, edit the composite block in `/boot/config.txt` and reboot
 - If UI fails to start, ensure tty1 free: `sudo systemctl stop getty@tty1`
 - Web diagnostics page: `http://<pi>:8080/` (bottom section, includes UI debug and service logs)
+- mpv backend details: `/tmp/crt-kitchen-tv-mpv.log`
 - JSON diagnostics endpoint: `http://<pi>:8080/api/logs?lines=200`
 
 ## Notes

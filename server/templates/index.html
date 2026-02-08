@@ -46,7 +46,7 @@
 
     <label>mpv backend</label>
     <select name="mpv_backend">
-      {% for opt in ['drm','x11','auto'] %}
+      {% for opt in ['drm','sdl','x11','auto'] %}
         <option value="{{opt}}" {% if cfg.get('mpv_backend','drm')==opt %}selected{% endif %}>{{opt}}</option>
       {% endfor %}
     </select>
@@ -86,6 +86,9 @@
 
     <h3>UI debug (`/tmp/crt-kitchen-tv-ui.log`)</h3>
     <pre>{{ (logs or {}).get('ui_debug', 'No data') }}</pre>
+
+    <h3>mpv debug (`/tmp/crt-kitchen-tv-mpv.log`)</h3>
+    <pre>{{ (logs or {}).get('mpv_debug', 'No data') }}</pre>
 
     <h3>Service log (`crt-ui.service`)</h3>
     <pre>{{ (logs or {}).get('crt_ui_service', 'No data') }}</pre>
