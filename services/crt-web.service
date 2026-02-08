@@ -1,7 +1,7 @@
 [Unit]
 Description=CRT Kitchen TV Web Config UI
-After=network.target
-Wants=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
@@ -9,6 +9,7 @@ WorkingDirectory=/opt/crt-kitchen-tv
 User=crt
 Group=crt
 Environment=CRT_CONFIG=/etc/crt-kitchen-tv/config.yaml
+Environment=PYTHONUNBUFFERED=1
 ExecStart=/opt/crt-kitchen-tv/venv/bin/python -m waitress --listen=0.0.0.0:8080 server.app:app
 Restart=on-failure
 RestartSec=2

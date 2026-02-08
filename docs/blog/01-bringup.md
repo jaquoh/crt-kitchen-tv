@@ -24,50 +24,71 @@ This document describes the initial bring-up phase: hardware decisions, OS prepa
 ## Software architecture (high level)
 
 The system is split into three main parts:
-1. Frontend UI (framebuffer-based, CRT-optimized)
+1. Frontend UI (pygame-based, CRT-optimized, running under minimal X11)
 2. Player (mpv wrapper for local files and streams)
 3. Web UI (Flask-based configuration interface)
 
-## Preparing the Raspberry Pi OS
+## Operating system choice
 
-- Raspberry Pi OS Lite
+After initial experiments with Raspberry Pi OS Lite, the final choice for this project is **DietPi**.
+
+Reasons for choosing DietPi:
+- Extremely small and fast base system
+- Excellent support for Raspberry Pi Zero (ARMv6)
+- Clean framebuffer and composite video support
+- No desktop environment by default
+- Easy to reason about and reproduce
+
+DietPi provides `/dev/fb0` for composite output and allows adding only the minimal X11 stack required for SDL/pygame.
+
+## Composite video configuration
+
+The CRT is connected using the Raspberry Pi composite output. Video mode is configured via the Raspberry Pi firmware options.
+
+Typical configuration (PAL example):
+- `sdtv_mode=2` (PAL)
+- Framebuffer resolution: `720x576`
+
+On DietPi, this is configured through `dietpi-config` → Display Options.
+
+## System preparation
+
+- DietPi installed on the SD card
 - SSH enabled
-- Custom user created: crt
-
-## Securing SSH access
-
-- SSH key-based authentication
+- Dedicated runtime user created: `crt`
+- SSH key-based authentication enabled
 - Password authentication disabled
 - Root login disabled
 
-## Installing base packages
-
-sudo apt update && sudo apt install -y \
-  git ca-certificates curl wget openssh-client \
-  python3 python3-venv python3-pip build-essential \
-  alsa-utils mpv ffmpeg fonts-dejavu
-
-## Project repository and installation flow
-
-The entire system is installed via a single Git repository and managed using systemd.
+The system is administered exclusively through the `crt` user using `sudo`.
 
 ## First install on the Pi
 
-1. Clone the repository
-2. Make scripts executable
-3. Run install.sh
+1. Log in as user `crt`
+2. Clone the repository into `/opt/crt-kitchen-tv`
+3. Run `install.sh` as root
 4. Reboot
+
+The installer:
+- Installs all required packages
+- Creates and configures the runtime user
+- Sets up a Python virtual environment
+- Installs systemd services
+- Configures X11 auto-start on tty1
 
 ## First validation steps
 
-- SSH access works
-- Web UI reachable
-- Audio devices detected
-- Composite video stable
+- System boots directly into the CRT UI
+- Composite video is stable and correctly scaled
+- Web UI reachable over the network
+- mpv playback works from the command line
+- GPIO access available for future IR input
 
 ## Current state
 
-Base system installed and stable.
+The system boots reliably into a fullscreen CRT-optimized UI running under a minimal X11 environment.
+
+No desktop environment or window manager is used. The Raspberry Pi behaves like a dedicated appliance.
 
 ## Next steps
 
